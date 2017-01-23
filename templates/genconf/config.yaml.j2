@@ -2,11 +2,23 @@ bootstrap_url: {{ dcos_bootstrap_url }}
 cluster_name: {{ dcos_cluster_name }}
 exhibitor_storage_backend: {{ dcos_exhibitor_storage_backend }}
 ip_detect_filename: {{ dcos_bootstrap_dir }}/genconf/ip-detect
+master_discovery: static
 master_list:
 {% for host in groups['mesos-master'] %}
-- {{ hostvars[host]['ansible_eth0']['ipv4']['address'] }}
+- {{ bootstrap_ansible_ipv4 }}
 {% endfor %}
 
 resolvers:
 - {{ dcos_resolvers_0 }}
 - {{ dcos_resolvers_1 }}
+
+{% if env.http_proxy is defined %}
+use_proxy: 'true'
+http_proxy: {{ env.http_proxy }}
+https_proxy: {{ env.https_proxy }}
+no_proxy: 
+{% set np_list = env.no_proxy.split(',') %}
+{% for h in np_list %}
+- '{{ h }}'
+{% endfor %}
+{% endif %}
